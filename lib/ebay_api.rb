@@ -13,7 +13,7 @@ module EbayAPI
     end
   end
 
-  EBAY_LOGIN_URL = "https://signin.ebay.com/ws/eBayISAPI.dll"
+  EBAY_LOGIN_URL = "https://signin.sandbox.ebay.com/ws/eBayISAPI.dll"
   X_EBAY_API_REQUEST_CONTENT_TYPE = 'text/xml'
   X_EBAY_API_COMPATIBILITY_LEVEL = '675'
   X_EBAY_API_GETSESSIONID_CALL_NAME = 'GetSessionID'
