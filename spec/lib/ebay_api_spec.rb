@@ -38,14 +38,14 @@ describe EbayAPI do
         params = {}
         params[:internal_return_to] = internal_return_to
         params[:sid] = session_id
-        subject.ebay_login_url(session_id).should == "#{EbayAPI::EBAY_LOGIN_URL}?#{singleSignOn}&runame=runame&sid=#{session_id}&ruparams=#{to_query(params)}"
+        subject.ebay_login_url(session_id).should == "#{subject.base_url}?#{singleSignOn}&runame=runame&sid=#{session_id}&ruparams=#{to_query(params)}"
       end
 
       it "should return ebay login url without internal return to when internal_return_to isn't given in request" do
         subject.stub(:internal_return_to) { false }
         params = {}
         params[:sid] = session_id
-        subject.ebay_login_url(session_id).should == "#{EbayAPI::EBAY_LOGIN_URL}?#{singleSignOn}&runame=runame&sid=#{session_id}&ruparams=#{to_query(params)}"
+        subject.ebay_login_url(session_id).should == "#{subject.base_url}?#{singleSignOn}&runame=runame&sid=#{session_id}&ruparams=#{to_query(params)}"
       end
     end
 
@@ -58,20 +58,42 @@ describe EbayAPI do
         params = {}
         params[:internal_return_to] = internal_return_to
         params[:sid] = session_id
-        subject.ebay_login_url(session_id).should == "#{EbayAPI::EBAY_LOGIN_URL}?#{signIn}&runame=runame&SessId=#{session_id}&ruparams=#{to_query(params)}"
+        subject.ebay_login_url(session_id).should == "#{subject.base_url}?#{signIn}&runame=runame&SessId=#{session_id}&ruparams=#{to_query(params)}"
       end
 
       it "should return ebay login url without internal return to when internal_return_to isn't given in request" do
         subject.stub(:internal_return_to) { false }
         params = {}
         params[:sid] = session_id
-        subject.ebay_login_url(session_id).should == "#{EbayAPI::EBAY_LOGIN_URL}?#{signIn}&runame=runame&SessId=#{session_id}&ruparams=#{to_query(params)}"
+        subject.ebay_login_url(session_id).should == "#{subject.base_url}?#{signIn}&runame=runame&SessId=#{session_id}&ruparams=#{to_query(params)}"
       end
     end
 
     ## The activesupport to_query extension doesn't escape the = character as it's meant for a primary query string
     def to_query(params)
       params.to_query.gsub("=", "%3D").gsub("&", "%26")
+    end
+  end
+  
+  describe "#sandbox?" do    
+    context "when the sandbox option is set to true" do
+      before { subject.options.sandbox = true }
+      specify { subject.sandbox?.should be_true }
+    end
+    context "when the sandbox option is set to false" do
+      before { subject.options.sandbox = false }
+      specify { subject.sandbox?.should be_false }
+    end
+  end
+  
+  describe "#base_url" do    
+    context "when the sandbox option is set to true" do
+      before { subject.options.sandbox = true }
+      specify { subject.base_url.should eq("https://signin.sandbox.ebay.com/ws/eBayISAPI.dll") }
+    end
+    context "when the sandbox option is set to false" do
+      before { subject.options.sandbox = false }
+      specify { subject.base_url.should eq("https://signin.ebay.com/ws/eBayISAPI.dll") }
     end
   end
 

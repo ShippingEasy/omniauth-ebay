@@ -13,7 +13,6 @@ module EbayAPI
     end
   end
 
-  EBAY_LOGIN_URL = "https://signin.sandbox.ebay.com/ws/eBayISAPI.dll"
   X_EBAY_API_REQUEST_CONTENT_TYPE = 'text/xml'
   X_EBAY_API_COMPATIBILITY_LEVEL = '675'
   X_EBAY_API_GETSESSIONID_CALL_NAME = 'GetSessionID'
@@ -83,7 +82,7 @@ module EbayAPI
   end
 
   def ebay_login_url(session_id, ruparams={})
-    url = "#{EBAY_LOGIN_URL}?#{options.auth_type}&runame=#{options.runame}&#{session_id_field_name}=#{CGI::escape(session_id)}"
+    url = "#{base_url}?#{options.auth_type}&runame=#{options.runame}&#{session_id_field_name}=#{CGI::escape(session_id)}"
 
     ruparams[:internal_return_to] = internal_return_to if internal_return_to
     ruparams[:sid] = session_id
@@ -91,7 +90,15 @@ module EbayAPI
 
     url
   end
-
+  
+  def base_url
+    base_url = sandbox? ? "https://signin.sandbox.ebay.com/ws/eBayISAPI.dll" : "https://signin.ebay.com/ws/eBayISAPI.dll"
+  end
+  
+  def sandbox?
+    options.sandbox
+  end
+  
   protected
 
   def api(call_name, request)
