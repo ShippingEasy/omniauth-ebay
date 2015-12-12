@@ -123,19 +123,66 @@ describe EbayAPI do
       {
           "FetchTokenResponse" =>
               {
-                  "eBayAuthToken" => "ebay_auth_token"
+                  "eBayAuthToken" => "ebay_auth_token",
+                  "HardExpirationTime" => "2017-06-03T17:40:47.000Z",
               }
       }
     end
 
     it "should return an ebay auth token for a good response" do
       subject.stub(:api) { [good_parsed_response, good_response] }
-      subject.get_auth_token("username", "secret_id").should == "ebay_auth_token"
+      token = subject.get_auth_token("username", "secret_id")
+      token.value.should == "ebay_auth_token"
+      token.expires_at.should == 1496511647
+      token.expires?.should be_true
     end
 
     it "should raise EbayAPIError for a bad response" do
       subject.stub(:api) { [bad_parsed_response, bad_response] }
       expect { subject.get_auth_token("username", "secret_id") }.to raise_error EbayAPI::EbayApiError
+    end
+  end
+
+  describe "Token" do
+    it "holds an authentication token value and its expiration" do
+      token = EbayAPI::Token.new("fake_token", "2017-06-03T17:40:47.000Z")
+      token.value.should == "fake_token"
+      token.expiration.should == "2017-06-03T17:40:47.000Z"
+    end
+
+    context "when a valid expiration time is provided" do
+      let(:expiration) { "2017-06-03T17:40:47.000Z" }
+      subject(:token) { EbayAPI::Token.new("fake_token", expiration) }
+
+      it "indicates the token expires" do
+        token.expires?.should be_true
+      end
+
+      it "returns the epoch time in expires_at" do
+        token.expires_at.should == 1496511647
+      end
+
+      it "returns the unparsed time in expiration" do
+        token.expiration.should == expiration
+      end
+    end
+
+    context "when an invalid expiration time is provided" do
+      it "indicates the token does not expire" do
+        token = EbayAPI::Token.new("fake", nil)
+        token.expires?.should be_false
+
+        token = EbayAPI::Token.new("fake", "invalid")
+        token.expires?.should be_false
+      end
+
+      it "returns a nil expires_at value" do
+        token = EbayAPI::Token.new("fake", nil)
+        token.expires_at.should be_nil
+
+        token = EbayAPI::Token.new("fake", "invalid")
+        token.expires_at.should be_nil
+      end
     end
   end
 

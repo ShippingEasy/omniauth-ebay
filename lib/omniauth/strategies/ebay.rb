@@ -28,7 +28,7 @@ module OmniAuth
       info do
         {
             :ebay_id => raw_info['UserID'],
-            :ebay_token => @auth_token,
+            :ebay_token => @auth_token.value,
             :email => raw_info['Email'],
             :full_name => raw_info["RegistrationAddress"] && raw_info["RegistrationAddress"]["Name"],
             :country => raw_info["RegistrationAddress"] && raw_info["RegistrationAddress"]["Country"],
@@ -39,7 +39,9 @@ module OmniAuth
 
       credentials do
         {
-          :token => @auth_token,
+          :token => @auth_token.value,
+          :expires => @auth_token.expires?,
+          :expires_at => @auth_token.expires_at,
         }
       end
 
@@ -65,7 +67,7 @@ module OmniAuth
       #6: Request the user info from eBay
       def callback_phase
         @auth_token = get_auth_token(request.params["username"], request.params["sid"])
-        @user_info = get_user_info(request.params["username"], @auth_token)
+        @user_info = get_user_info(request.params["username"], @auth_token.value)
         super
       rescue => ex
         fail!("Failed to retrieve user info from ebay", ex)
