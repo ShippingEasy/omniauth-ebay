@@ -52,6 +52,8 @@ describe OmniAuth::Strategies::Ebay do
 
         auth_hash["credentials"].should_not be_nil
         auth_hash["credentials"]["token"].should == "fake_auth_token"
+        auth_hash["credentials"]["expires"].should == true
+        auth_hash["credentials"]["expires_at"].should == 1381221410
 
         auth_hash["extra"].should_not be_nil
         # returns entire response from GetUser

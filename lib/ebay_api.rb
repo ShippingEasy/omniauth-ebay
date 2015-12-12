@@ -70,13 +70,35 @@ module EbayAPI
     )
 
     parsed_response, response = api(X_EBAY_API_FETCHAUTHTOKEN_CALL_NAME, request)
-    token = parsed_response && parsed_response["FetchTokenResponse"] && parsed_response["FetchTokenResponse"]["eBayAuthToken"]
+    value = parsed_response && parsed_response["FetchTokenResponse"] && parsed_response["FetchTokenResponse"]["eBayAuthToken"]
 
-    if (!token)
+    if (!value)
       raise EbayApiError.new("Failed to retrieve auth token", request, response)
     end
 
-    token
+    Token.new(value, parsed_response["FetchTokenResponse"]["HardExpirationTime"])
+  end
+
+  class Token
+    attr_reader :value, :expiration
+
+    def initialize(value, expiration)
+      @value = value
+      @expiration = expiration
+    end
+
+    def expires_at
+      @expires_at ||=
+        begin
+          expiration ? Time.parse(expiration).to_i : nil
+        rescue ArgumentError
+          nil
+        end
+    end
+
+    def expires?
+      !!expires_at
+    end
   end
 
   def get_user_info(username, auth_token)
